@@ -58,6 +58,7 @@ public class SocketSessionPool {
      */
     public static void sendMessage(Map<String,Object> params)
     {
+        log.info("点对点发消息 介接收到的参数 {}",params);
         //        var data = {'fromUserId': userId, 'toUserId': toUserId, 'msg': msg}
          String fromUserId = (String) params.get("fromUserId");
          String toUserId = (String) params.get("toUserId");
