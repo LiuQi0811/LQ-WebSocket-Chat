@@ -57,11 +57,18 @@ public class WebSocketEndpoint {
     @OnMessage
     public void onMessage(String message, Session session) {
         log.info("收到客户端消息后调用的方法.......");
-//        log.info("获取会话信息 String {}  ",message);
-//        SocketSessionPool.sendMessage(message);
-        Map<String,Object> params = JSON.parseObject(message, new HashMap<String, Object>().getClass());
-        log.info("获取会话信息 JSON  {}",params);
-        SocketSessionPool.sendMessage(params);
+        log.info("接收到的消息返回结果 {}",message);
+        if(message.contains("fromUserId")){// 点对点会话
+            Map<String,Object> params = JSON.parseObject(message, new HashMap<String, Object>().getClass());
+            log.info("获取会话信息 JSON  {}",params);
+            SocketSessionPool.sendMessage(params);
+        }
+        else {//群发会话
+            log.info("获取会话信息 String {}  ",message);
+            SocketSessionPool.sendMessage(message);
+        }
+
+
 
 
     }
