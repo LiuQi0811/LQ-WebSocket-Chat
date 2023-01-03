@@ -48,7 +48,7 @@
                         <label class="layui-form-label">接收消息:</label>
                         <div class="layui-input-block">
                             <!--显示消息-->
-                            <textarea disabled id="receive" required lay-verify="required"
+                            <textarea disabled id="showMsg" required lay-verify="required"
                                       style="width: 600px;height: 320px"
                                       placeholder="接收到的信息。。。。。" class="layui-textarea"></textarea>
                         </div>
@@ -66,6 +66,7 @@
                             <input id="userId" type="text" required lay-verify="required" placeholder="要发送的消息接收用户"
                                    autocomplete="off" class="layui-input">
                         </div>
+                    </div>
                         <div class="layui-form-item">
                             <div class="layui-input-block">
                                 <button type="button" class="layui-btn layui-btn-normal layui-btn-radius"
@@ -73,7 +74,6 @@
                                 </button>
                             </div>
                         </div>
-                    </div>
                 </form>
             </div>
         </div>
@@ -90,7 +90,7 @@
     var DEBUG_FLAG = true
     $(() => {
             //启动 websocket
-            createWebSocket(0)
+            createWebSocket(1)
         }
     )
 
@@ -112,15 +112,23 @@
 
     receiveMessage = (message) => {
         if (DEBUG_FLAG) {
-            $('#receive').val($('#receive').val() + "\n" + message)
+            $('#showMsg').val($('#showMsg').val() + "\n" + message)
         }
     }
 
 
     sendMessageBySocket = () => {
+        // //获取输入的发送的内容
+        // var message = $('#sendMessage').val()
+        // wsObj.send(message)
+
         //获取输入的发送的内容
-        var message = $('#sendMessage').val()
-        wsObj.send(message)
+        var msg = $('#sendMessage').val()
+        // 发送消息的用户id
+        var toUserId = $('#userId').val()
+        // 组成的数据
+        var data = {'fromUserId': userId, 'toUserId': toUserId, 'msg': msg}
+        wsObj.send(JSON.stringify(data))
     }
 
 
@@ -132,10 +140,6 @@
         // 组成的数据
         var data = {'fromUserId': userId, 'toUserId': toUserId, 'msg': msg}
         wsObj.send(JSON.stringify(data))
-    }
-    receiveMessage = (env) => { //有消息推送触发该事件
-        var jsonStr = env.data
-        writeToScreen(jsonStr)
     }
 
 

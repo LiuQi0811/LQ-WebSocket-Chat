@@ -57,7 +57,7 @@ function onWsOpen(env,type) {
     console.log('开始 type' ,env,type)
     if(type==0){
         writeToScreen('CONNECTED -- 群发')
-    }else if (type===1){
+    }else if (type==1){
         receiveMessage('CONNECTED -- 点对点')
     }
 
@@ -82,7 +82,7 @@ function writeToScreen(message) {
 
 function receiveMessage(message){
     if (DEBUG_FLAG) {
-        $('#receive').val($('#receive').val() + "\n" + message)
+        $('#showMsg').val($('#showMsg').val() + "\n" + message)
     }
 }
 
