@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web - Socket</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/layui/2.7.6/css/layui.css"
+          tppabs="//res.ilayuis.com/layui/dist/css/layui.css" media="all">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/layui/2.7.6/layui.js" charset="utf-8"></script>
+</head>
+<body>
+<div>
+    <div class="layui-collapse" lay-accordion>
+        <div class="layui-colla-item">
+            <h2 class="layui-colla-title">群发</h2>
+            <div class="layui-colla-content layui-show">
+                <form class="layui-form" action="">
+                    <div class="layui-form-item layui-form-text">
+                        <label class="layui-form-label">接收消息:</label>
+                        <div class="layui-input-block">
+                            <!--显示消息-->
+                            <textarea disabled id="showMessage" required lay-verify="required"
+                                      style="width: 600px;height: 320px"
+                                      placeholder="接收到的信息。。。。。" class="layui-textarea"></textarea>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">发送消息:</label>
+                        <div class="layui-input-block">
+                            <!--发送消息-->
+                            <input id="sendMessage" value="群发" class="layui-input" placeholder="请输入想要发送的消息。。。。"/>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button type="button" class="layui-btn layui-btn-normal layui-btn-radius"
+                                    onclick="sendMessageBySocket()">发送消息
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="layui-colla-item">
+            <h2 class="layui-colla-title">点对点</h2>
+            <div class="layui-colla-content layui-show">
+                <form class="layui-form" action="">
+                    <div class="layui-form-item layui-form-text">
+                        <label class="layui-form-label">接收消息:</label>
+                        <div class="layui-input-block">
+                            <!--显示消息-->
+                            <textarea disabled id="receive" required lay-verify="required"
+                                      style="width: 600px;height: 320px"
+                                      placeholder="接收到的信息。。。。。" class="layui-textarea"></textarea>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">发送消息:</label>
+                        <div class="layui-input-block">
+                            <!--发送消息-->
+                            <input id="send" value="点对点" class="layui-input" placeholder="请输入想要发送的消息。。。。"/>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">消息接收用户:</label>
+                        <div class="layui-input-inline">
+                            <input id="userId" type="text" required lay-verify="required" placeholder="要发送的消息接收用户"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button type="button" class="layui-btn layui-btn-normal layui-btn-radius"
+                                        onclick="sendMessageByUser()">发送消息
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+
+</div>
+</body>
+</html>
+<script src="js/webSocket.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+<script>
+    var DEBUG_FLAG = true
+    $(() => {
+            //启动 websocket
+            createWebSocket(0)
+        }
+    )
+
+    onWsMessage = (env) => { //有消息推送触发该事件
+        var jsonStr = env.data
+        writeToScreen(jsonStr)
+    }
+
+    onMessage = (env) => { //有消息推送触发该事件
+        var jsonStr = env.data
+        receiveMessage(jsonStr)
+    }
+
+    writeToScreen = (message) => {
+        if (DEBUG_FLAG) {
+            $('#showMessage').val($('#showMessage').val() + "\n" + message)
+        }
+    }
+
+    receiveMessage = (message) => {
+        if (DEBUG_FLAG) {
+            $('#receive').val($('#receive').val() + "\n" + message)
+        }
+    }
+
+
+    sendMessageBySocket = () => {
+        //获取输入的发送的内容
+        var message = $('#sendMessage').val()
+        wsObj.send(message)
+    }
+
+
+    sendMessageByUser = () => {
+        //获取输入的发送的内容
+        var msg = $('#send').val()
+        // 发送消息的用户id
+        var toUserId = $('#userId').val()
+        // 组成的数据
+        var data = {'fromUserId': userId, 'toUserId': toUserId, 'msg': msg}
+        wsObj.send(JSON.stringify(data))
+    }
+    receiveMessage = (env) => { //有消息推送触发该事件
+        var jsonStr = env.data
+        writeToScreen(jsonStr)
+    }
+
+
+</script>

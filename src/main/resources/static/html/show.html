@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web - Socket</title>
+    <!-- Import style -->
+    <link rel="stylesheet" href="//unpkg.com/element-plus/dist/index.css"/>
+    <!-- Import component library -->
+    <script src="//unpkg.com/element-plus"></script>
+</head>
+<body>
+<div id="app">
+    <el-form
+            status-icon
+            label-width="220px"
+    >
+        <el-form-item label="内容:" prop="showMessage">
+            <!--显示消息-->
+            <el-input
+                    v-model="showMessage"
+                    :rows="20"
+                    type="textarea"
+                    placeholder="接收的内容信息......"
+            />
+        </el-form-item>
+        <el-form-item label="消息: " prop="message">
+            <!--发送消息-->
+            <el-input v-model="message" class="w-50 m-2" size="large" placeholder="请输入想要发送的消息。。。。"/>
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" round @click="sendHeartBeat">发送消息</el-button>
+        </el-form-item>
+    </el-form>
+</div>
+</body>
+</html>
+<script src="../js/websocketCommand.js"></script>
+<script>
+    var DEBUG_FLAG = true
+    const App = {
+        data() {
+            return {
+                message: 'Hello Element Plus',
+                showMessage: '接收的内容'
+            }
+        }, created() { //加载运行时 触发
+            this.createWebSocket()
+        },
+        methods: {
+            /**
+             * 接受消息
+             */
+            receiveMsg(data) { //  ws连接成功，后台返回的ws数据
+                console.log('服务端推送', data);
+                this.showMessage = data
+                // 收到服务端发送的数据后，需要处理的逻辑
+                // 如：this.$store.dispatch("app/changeAppMsg",['receiveCloudMsg',data]);
+            },
+            /**
+             * 创建连接
+             */
+            createWebSocket() {
+                // 建立连接、发起ws请求，以心跳方式，向服务端发送数据
+                var host = window.location.host //获取本机地址
+                userId = this.GetQueryString('userId')
+                // wsUri ='ws://'+host+'/websocket?userId='+userId
+                wsUri = 'ws://' + host + '/websocket/' + userId
+                console.log("ws 地址", wsUri)
+                this.wsObj = new WebSocket(wsUri)
+                // 若为字符串类型，直接传参
+                websocketCommand(this.wsObj, 'create', 1000, 'heartbeat')
+                // 若为对象类型，以回调方式发送
+                websocketCommand(this.wsObj, 'create', 5000, this.sendHeartBeat, this.receiveMsg, this.reconnectWebSocket);
+
+            },
+            /**
+             * 断网重连
+             */
+            reconnectWebSocket() {//断网重连，需要处理的逻辑
+                if (this.wsObj) {
+                    console.log('%c websocket_reconnect', 'color:blue')
+                    this.createWebSocket()
+                    // 如：this.$store.dispatch("app/changeAppMsg",['cloudWebsocketReconnect',true]);
+                }
+            },
+            sendHeartBeat() {
+                console.log('发送心跳', JSON.stringify(this.message));
+                this.wsObj.send(JSON.stringify(this.message))
+            },
+            GetQueryString(name){
+                var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i')
+                var r = window.location.search.substr(1).match(reg) // 获取url中'?'符后的字符串 并正则匹配
+                var context = ''
+                console.log(r)
+                if (r != null) {
+                    context = r[2]
+                }
+                reg = null
+                r = null
+                console.log("CONTEXT",context)
+                return context == null || context == '' || context == undefined ? '' : context
+            }
+
+
+
+
+
+            // createWebSocket() {
+            //     createWebSocket()
+            // },
+            // onWsMessage(env) { //有消息推送触发该事件
+            //   onWsMessage(env)
+            // },
+            // writeToScreen(message) {
+            //     if (DEBUG_FLAG) {
+            //         this.showMessage = message +"\n"+ message
+            //     }
+            // },
+            // sendMessageBySocket() {
+            //     //获取输入的发送的内容
+            //     var message = this.message
+            //     wsObj.send(message)
+            // }
+        }
+
+    }
+    const app = Vue.createApp(App);
+    app.use(ElementPlus);
+    app.mount("#app");
+
+</script>
