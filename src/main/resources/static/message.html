@@ -11,7 +11,7 @@
 <div>
     <div class="layui-collapse" lay-accordion>
         <div class="layui-colla-item">
-            <h2 class="layui-colla-title">群发</h2>
+            <h2 class="layui-colla-title" onclick="types(0)">群发</h2>
             <div class="layui-colla-content layui-show">
                 <form class="layui-form" action="">
                     <div class="layui-form-item layui-form-text">
@@ -41,7 +41,7 @@
             </div>
         </div>
         <div class="layui-colla-item">
-            <h2 class="layui-colla-title">点对点</h2>
+            <h2 class="layui-colla-title" onclick="types(1)">点对点</h2>
             <div class="layui-colla-content layui-show">
                 <form class="layui-form" action="">
                     <div class="layui-form-item layui-form-text">
@@ -88,11 +88,22 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
 <script>
     var DEBUG_FLAG = true
+    var i = 0
+
+
+
     $(() => {
+        types = (type)=>{
+            i= type
+            console.log("获取i ",i)
+
             //启动 websocket
-            createWebSocket(1)
+            createWebSocket(i)
+        }
         }
     )
+
+
 
     onWsMessage = (env) => { //有消息推送触发该事件
         var jsonStr = env.data
@@ -118,17 +129,9 @@
 
 
     sendMessageBySocket = () => {
-        // //获取输入的发送的内容
-        // var message = $('#sendMessage').val()
-        // wsObj.send(message)
-
         //获取输入的发送的内容
-        var msg = $('#sendMessage').val()
-        // 发送消息的用户id
-        var toUserId = $('#userId').val()
-        // 组成的数据
-        var data = {'fromUserId': userId, 'toUserId': toUserId, 'msg': msg}
-        wsObj.send(JSON.stringify(data))
+        var message = $('#sendMessage').val()
+        wsObj.send(message)
     }
 
 
