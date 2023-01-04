@@ -6,7 +6,7 @@ import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 /*
  *@ClassName WebSocketConfig
- *@Description TODO
+ *@Description 双向通信配置
  *@Author LiuQi
  *@Date 2023/1/2 11:50
  *@Version 1.0

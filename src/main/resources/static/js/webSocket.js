@@ -3,6 +3,7 @@ var wsUri = null
 var userId = -1
 var lockReconnect = false
 var wsCreateHandler = null
+var paramType = null
 
 /**
  * 创建 会话连接
@@ -10,6 +11,7 @@ var wsCreateHandler = null
  */
 function createWebSocket(type) {
     console.log('创建连接传入的type ', type)
+    paramType = type
     var host = window.location.host //获取本机地址
     console.log('获取本机地址 ', host)
     userId = GetQueryString('userId')
@@ -33,14 +35,19 @@ function initWsEventHandle(type) {
         wsObj.onopen = (env) => {
             console.log('TYPE', type)
             onWsOpen(env, type)
+            heartCheckWebSocket.start() //开启心跳
         }
 
         wsObj.onmessage = (env) => {
             if (type === 0) {
                 onWsMessage(env)
+                heartCheckWebSocket.start() //开启心跳
             } else if (type === 1) {
                 onMessage(env)
+                heartCheckWebSocket.start() //开启心跳
             }
+
+
         }
         wsObj.onclose = (env) => {
             writeToScreen('执行关闭事件，开始重连 -- 群发')
@@ -140,11 +147,50 @@ function reconnect() {
     wsCreateHandler = setTimeout(() => {
         writeToScreen('群发 重连......' + wsUri)
         receiveMessage('点对点 重连......' + wsUri)
-        console.log(' 重连的 TYPE ', type)
-        createWebSocket(type)
+        console.log(' 重连的 TYPE ', paramType)
+        createWebSocket(paramType)
         lockReconnect = false
         writeToScreen('群发 重连完成')
         receiveMessage('点对点 重连完成')
     }, 1000)
 
+}
+
+
+/**
+ * 心跳检测
+ */
+var heartCheckWebSocket = {
+    //15秒之内如果没有收到后台的消息，则认为连接断开了，需要再次连接
+    timeout: 15000,
+    timeoutObj: null,
+    serverTimeoutObj: null,
+    reset: () => { // 重启
+        clearTimeout(this.timeoutObj)
+        clearTimeout(this.serverTimeoutObj)
+        this.start()
+    },
+    start: () => { //开启定时器
+        var self = this
+        this.timeoutObj && clearTimeout(this.timeoutObj)
+        this.serverTimeoutObj && clearTimeout(this.serverTimeoutObj)
+        this.timeoutObj = setTimeout(() => {
+            writeToScreen(' 群发  发送到ping后台')
+            receiveMessage(' 点对点  发送到ping后台')
+            try {
+                wsObj.send('ping')
+            } catch (e) {
+                writeToScreen('群发 发送ping 异常')
+                receiveMessage('点对点 发送ping 异常')
+            }
+            //内嵌计时器
+            self.serverTimeoutObj = setTimeout(() => {
+                //如果onclose 会执行 reconnect，我们执行ws.close()就行了 如果直接执行reconnect会触发 onclose 导致重连两次
+                writeToScreen(' 群发 没有收到后台的数据，关闭连接')
+                receiveMessage('点对点 没有收到后台的数据，关闭连接')
+                // wsObj.close()
+                reconnect()
+            }, self.timeout)
+        }, this.timeout)
+    }
 }

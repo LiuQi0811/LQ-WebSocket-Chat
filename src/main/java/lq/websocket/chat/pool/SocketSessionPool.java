@@ -6,8 +6,6 @@ import javax.websocket.Session;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 /*
  *@ClassName SocketSessionPool
  *@Description 会话连接池
@@ -47,9 +45,11 @@ public class SocketSessionPool {
      * @param message
      */
     public static void sendMessage(String message) {
-        for (String sessionId : SocketSessionPool.sessions.keySet()) {
-            SocketSessionPool.sessions.get(sessionId).getAsyncRemote().sendText(message);
-        }
+       synchronized (SocketSessionPool.sessions){
+           for (String sessionId : SocketSessionPool.sessions.keySet()) {
+               SocketSessionPool.sessions.get(sessionId).getAsyncRemote().sendText(message);
+           }
+       }
     }
 
     /**
@@ -58,16 +58,18 @@ public class SocketSessionPool {
      */
     public static void sendMessage(Map<String,Object> params)
     {
-        log.info("点对点发消息 介接收到的参数 {}",params);
-        //        var data = {'fromUserId': userId, 'toUserId': toUserId, 'msg': msg}
-         String fromUserId = (String) params.get("fromUserId");
-         String toUserId = (String) params.get("toUserId");
-         String msg = (String) params.get("msg");
-         msg = "来自"+fromUserId+"的消息: "+msg;
+        synchronized (SocketSessionPool.sessions){
+            log.info("点对点发消息 介接收到的参数 {}",params);
+            //        var data = {'fromUserId': userId, 'toUserId': toUserId, 'msg': msg}
+            String fromUserId = (String) params.get("fromUserId");
+            String toUserId = (String) params.get("toUserId");
+            String msg = (String) params.get("msg");
+            msg = "来自"+fromUserId+"的消息: "+msg;
 
-         Session session = SocketSessionPool.sessions.get(toUserId); //获取会话
-        if (session!=null) {
-            session.getAsyncRemote().sendText(msg);
+            Session session = SocketSessionPool.sessions.get(toUserId); //获取会话
+            if (session!=null) {
+                session.getAsyncRemote().sendText(msg);
+            }
         }
     }
 }
